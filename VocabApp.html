@@ -31,6 +31,19 @@
       font-size: 1em;
       text-align: center;
       white-space: normal;
+      cursor: pointer;
+    }
+    .choices button.correct {
+      background-color: #b6e7a7; /* light green */
+      color: #000;
+    }
+    .choices button.incorrect {
+      background-color: #f6a5a5; /* light red */
+      color: #000;
+    }
+    .choices button:disabled {
+      cursor: default;
+      opacity: 0.8;
     }
 
     .controls {
@@ -57,18 +70,14 @@
       flex-wrap: wrap;
     }
 
-    button {
-      cursor: pointer;
-    }
-
-    .hard-btn {
+    button.hard-btn {
       background-color: orange;
       color: white;
       font-weight: bold;
       padding: 10px 20px;
     }
 
-    .download-btn {
+    button.download-btn {
       background-color: green;
       color: white;
       font-weight: bold;
@@ -120,6 +129,8 @@
           .filter(Boolean);
 
         shuffleArray(vocab);
+        currentIndex = 0;
+        score = 0;
         document.getElementById("quizContainer").style.display = "block";
         showQuestion();
       };
@@ -152,27 +163,42 @@
       choices.forEach(choice => {
         const btn = document.createElement("button");
         btn.textContent = choice;
-        btn.onclick = () => checkAnswer(choice);
+        btn.disabled = false;
+        btn.onclick = () => checkAnswer(choice, btn);
         choicesContainer.appendChild(btn);
       });
 
       document.getElementById("scoreText").innerText = `Score: ${score}/${vocab.length}`;
+      document.querySelector(".hard-btn").style.display = "inline-block";
     }
 
-    function checkAnswer(selected) {
+    function checkAnswer(selected, button) {
+      const buttons = Array.from(document.getElementById("choices").children);
+      buttons.forEach(btn => btn.disabled = true);
+
       const isCorrect = selected === currentQuestion.meaning;
       if (isCorrect) {
         score++;
+        button.classList.add("correct");
       } else {
-        // Add to incorrect list
+        button.classList.add("incorrect");
+        // Mark correct answer
+        buttons.forEach(btn => {
+          if (btn.textContent === currentQuestion.meaning) {
+            btn.classList.add("correct");
+          }
+        });
+        // Add to incorrect list if not already there
         if (!incorrectList.some(item => item.word === currentQuestion.word)) {
           incorrectList.push(currentQuestion);
           localStorage.setItem("incorrectList", JSON.stringify(incorrectList));
         }
       }
 
+      document.getElementById("scoreText").innerText = `Score: ${score}/${vocab.length}`;
+
       currentIndex++;
-      showQuestion();
+      setTimeout(showQuestion, 1500); // Wait 1.5 sec before next question
     }
 
     function markHard() {
@@ -212,3 +238,4 @@
   </script>
 </body>
 </html>
+
