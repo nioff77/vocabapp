@@ -31,24 +31,15 @@
       font-size: 1em;
       text-align: center;
       white-space: normal;
-      cursor: pointer;
-    }
-    .choices button.correct {
-      background-color: #b6e7a7; /* light green */
-      color: #000;
-    }
-    .choices button.incorrect {
-      background-color: #f6a5a5; /* light red */
-      color: #000;
-    }
-    .choices button:disabled {
-      cursor: default;
-      opacity: 0.8;
     }
 
     .controls {
       margin-top: 20px;
       text-align: center;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
     }
 
     .score {
@@ -70,18 +61,37 @@
       flex-wrap: wrap;
     }
 
-    button.hard-btn {
+    button {
+      cursor: pointer;
+    }
+
+    .hard-btn {
       background-color: orange;
       color: white;
       font-weight: bold;
       padding: 10px 20px;
     }
 
-    button.download-btn {
+    .show-btn {
+      background-color: #555;
+      color: white;
+      font-weight: bold;
+      padding: 10px 20px;
+    }
+
+    .download-btn {
       background-color: green;
       color: white;
       font-weight: bold;
       padding: 10px 20px;
+    }
+
+    .correct {
+      background-color: lightgreen !important;
+    }
+
+    .incorrect {
+      background-color: lightcoral !important;
     }
   </style>
 </head>
@@ -97,6 +107,7 @@
     <div class="choices" id="choices"></div>
     <div class="controls">
       <button class="hard-btn" onclick="markHard()">+ Add to Hard</button>
+      <button class="show-btn" onclick="showAnswer()">Show Answer</button>
     </div>
     <div class="score" id="scoreText"></div>
   </div>
@@ -129,8 +140,6 @@
           .filter(Boolean);
 
         shuffleArray(vocab);
-        currentIndex = 0;
-        score = 0;
         document.getElementById("quizContainer").style.display = "block";
         showQuestion();
       };
@@ -141,12 +150,13 @@
       if (currentIndex >= vocab.length) {
         document.getElementById("questionText").innerText = `Quiz Complete! You scored ${score}/${vocab.length}`;
         document.getElementById("choices").innerHTML = "";
-        document.querySelector(".hard-btn").style.display = "none";
+        document.querySelector(".controls").style.display = "none";
         return;
       }
 
       currentQuestion = vocab[currentIndex];
-      document.getElementById("questionText").innerText = `(${currentIndex + 1}/${vocab.length}) What is the meaning of: ${currentQuestion.word}?`;
+      document.getElementById("questionText").innerText =
+        `(${currentIndex + 1}/${vocab.length}) What is the meaning of: ${currentQuestion.word}?`;
 
       const choicesContainer = document.getElementById("choices");
       choicesContainer.innerHTML = "";
@@ -163,32 +173,25 @@
       choices.forEach(choice => {
         const btn = document.createElement("button");
         btn.textContent = choice;
-        btn.disabled = false;
         btn.onclick = () => checkAnswer(choice, btn);
         choicesContainer.appendChild(btn);
       });
 
       document.getElementById("scoreText").innerText = `Score: ${score}/${vocab.length}`;
-      document.querySelector(".hard-btn").style.display = "inline-block";
     }
 
-    function checkAnswer(selected, button) {
-      const buttons = Array.from(document.getElementById("choices").children);
-      buttons.forEach(btn => btn.disabled = true);
+    function checkAnswer(selected, buttonEl) {
+      const allButtons = document.querySelectorAll("#choices button");
+      allButtons.forEach(btn => btn.disabled = true);
 
-      const isCorrect = selected === currentQuestion.meaning;
-      if (isCorrect) {
+      if (selected === currentQuestion.meaning) {
+        buttonEl.classList.add("correct");
         score++;
-        button.classList.add("correct");
       } else {
-        button.classList.add("incorrect");
-        // Mark correct answer
-        buttons.forEach(btn => {
-          if (btn.textContent === currentQuestion.meaning) {
-            btn.classList.add("correct");
-          }
-        });
-        // Add to incorrect list if not already there
+        buttonEl.classList.add("incorrect");
+        const correctBtn = Array.from(allButtons).find(btn => btn.textContent === currentQuestion.meaning);
+        if (correctBtn) correctBtn.classList.add("correct");
+
         if (!incorrectList.some(item => item.word === currentQuestion.word)) {
           incorrectList.push(currentQuestion);
           localStorage.setItem("incorrectList", JSON.stringify(incorrectList));
@@ -197,16 +200,33 @@
 
       document.getElementById("scoreText").innerText = `Score: ${score}/${vocab.length}`;
 
-      currentIndex++;
-      setTimeout(showQuestion, 1500); // Wait 1.5 sec before next question
+      setTimeout(() => {
+        currentIndex++;
+        showQuestion();
+      }, 1000);
     }
 
     function markHard() {
       if (!hardList.some(item => item.word === currentQuestion.word)) {
         hardList.push(currentQuestion);
         localStorage.setItem("hardList", JSON.stringify(hardList));
-        alert(`Added to Hard: ${currentQuestion.word};${currentQuestion.meaning}`);
+        alert(`${currentQuestion.word} is ${currentQuestion.meaning} and added hard list`);
       }
+    }
+
+    function showAnswer() {
+      const allButtons = document.querySelectorAll("#choices button");
+      allButtons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent === currentQuestion.meaning) {
+          btn.classList.add("correct");
+        }
+      });
+
+      setTimeout(() => {
+        currentIndex++;
+        showQuestion();
+      }, 1000);
     }
 
     function downloadList(type) {
@@ -238,4 +258,3 @@
   </script>
 </body>
 </html>
-
