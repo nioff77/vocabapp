@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vocabulary Quiz App</title>
+  <title>Vocabulary App</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -23,15 +23,16 @@
       margin-bottom: 10px;
     }
 
-    .choices button {
-      display: block;
-      width: 100%;
-      margin: 8px 0;
-      padding: 12px;
-      font-size: 1em;
-      text-align: center;
-      white-space: normal;
-    }
+	.choices button {
+	  display: block;
+	  width: 100%;
+	  margin: 25px 0;        /* Increased vertical margin */
+	  padding: 20px 12px;    /* Increased padding (top/bottom) */
+	  font-size: 1.1em;      /* Slightly larger text */
+	  text-align: center;
+	  white-space: normal;
+	}
+
 
     .controls {
       margin-top: 20px;
@@ -96,7 +97,7 @@
   </style>
 </head>
 <body>
-  <h1>Vocabulary Quiz App</h1>
+  <h1>Vocabulary App</h1>
 
   <div class="file-input">
     <input type="file" id="fileInput" accept=".txt" />
@@ -156,7 +157,7 @@
 
       currentQuestion = vocab[currentIndex];
       document.getElementById("questionText").innerText =
-        `(${currentIndex + 1}/${vocab.length}) What is the meaning of: ${currentQuestion.word}?`;
+        `(${currentIndex + 1}/${vocab.length}) What is '${currentQuestion.word}'?`;
 
       const choicesContainer = document.getElementById("choices");
       choicesContainer.innerHTML = "";
