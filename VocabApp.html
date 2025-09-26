@@ -13,7 +13,7 @@
       line-height: 1.6;
     }
 
-    h1 {
+    h1, h2 {
       text-align: center;
     }
 
@@ -23,16 +23,15 @@
       margin-bottom: 10px;
     }
 
-	.choices button {
-	  display: block;
-	  width: 100%;
-	  margin: 25px 0;        /* Increased vertical margin */
-	  padding: 20px 12px;    /* Increased padding (top/bottom) */
-	  font-size: 1.1em;      /* Slightly larger text */
-	  text-align: center;
-	  white-space: normal;
-	}
-
+    .choices button {
+      display: block;
+      width: 100%;
+      margin: 25px 0;
+      padding: 20px 12px;
+      font-size: 1.1em;
+      text-align: center;
+      white-space: normal;
+    }
 
     .controls {
       margin-top: 20px;
@@ -49,7 +48,7 @@
       text-align: center;
     }
 
-    .file-input {
+    .file-input, .text-input {
       margin-bottom: 20px;
       text-align: center;
     }
@@ -94,6 +93,12 @@
     .incorrect {
       background-color: lightcoral !important;
     }
+
+    textarea {
+      width: 100%;
+      font-size: 1em;
+      padding: 10px;
+    }
   </style>
 </head>
 <body>
@@ -101,6 +106,12 @@
 
   <div class="file-input">
     <input type="file" id="fileInput" accept=".txt" />
+  </div>
+
+  <h2 class="text-inputGroup">Or paste vocabulary below</h2>
+  <div class="text-input text-inputGroup">
+    <textarea id="textInput" rows="8" placeholder="word;meaning\nword;meaning..."></textarea><br/>
+    <button onclick="loadFromText()">Load from Text</button>
   </div>
 
   <div id="quizContainer" style="display:none;">
@@ -140,12 +151,47 @@
           })
           .filter(Boolean);
 
-        shuffleArray(vocab);
-        document.getElementById("quizContainer").style.display = "block";
-        showQuestion();
+        startQuiz();
       };
       reader.readAsText(file);
     });
+
+    function loadFromText() {
+      const text = document.getElementById("textInput").value.trim();
+      if (!text) {
+        alert("Please paste some vocabulary into the textarea.");
+        return;
+      }
+
+      const lines = text.split("\n").filter(Boolean);
+      vocab = lines
+        .map(line => {
+          const parts = line.split(";");
+          return parts.length === 2 ? { word: parts[0].trim(), meaning: parts[1].trim() } : null;
+        })
+        .filter(Boolean);
+
+      if (vocab.length === 0) {
+        alert("No valid vocab entries found.");
+        return;
+      }
+
+      startQuiz();
+    }
+
+    function startQuiz() {
+	  
+	  const elements = document.getElementsByClassName('text-inputGroup');
+		for (let el of elements) {
+			el.style.display = 'none';
+		}
+		
+      currentIndex = 0;
+      score = 0;
+      shuffleArray(vocab);
+      document.getElementById("quizContainer").style.display = "block";
+      showQuestion();
+    }
 
     function showQuestion() {
       if (currentIndex >= vocab.length) {
@@ -211,7 +257,7 @@
       if (!hardList.some(item => item.word === currentQuestion.word)) {
         hardList.push(currentQuestion);
         localStorage.setItem("hardList", JSON.stringify(hardList));
-        alert(`${currentQuestion.word} is ${currentQuestion.meaning} and added hard list`);
+        alert(`${currentQuestion.word} → ${currentQuestion.meaning} added to hard list`);
       }
     }
 
