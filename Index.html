@@ -3,305 +3,65 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vocabulary App</title>
+  <title>Vocabulary Tools</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 20px auto;
-      padding: 0 20px;
-      line-height: 1.6;
-    }
-
-    h1, h2 {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f4f8fb, #e8f0fe);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
       text-align: center;
+      padding: 20px;
     }
 
-    .question {
-      font-size: 1.5em;
-      margin-top: 20px;
-      margin-bottom: 10px;
+    .container {
+      max-width: 600px;
+      width: 100%;
     }
 
-    .choices button {
+    h1 {
+      font-size: 2.2em;
+      margin-bottom: 40px;
+      color: #333;
+    }
+
+    .button {
       display: block;
       width: 100%;
-      margin: 25px 0;
-      padding: 20px 12px;
-      font-size: 1.1em;
-      text-align: center;
-      white-space: normal;
-    }
-
-    .controls {
-      margin-top: 20px;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    .score {
+      padding: 15px 25px;
+      margin: 20px 0;
+      font-size: 1.2em;
       font-weight: bold;
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    .file-input, .text-input {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .button-group {
-      margin-top: 30px;
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    button {
+      color: white;
+      background-color: #007BFF;
+      border: none;
+      border-radius: 10px;
       cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
     }
 
-    .hard-btn {
-      background-color: orange;
-      color: white;
-      font-weight: bold;
-      padding: 10px 20px;
+    .button:hover {
+      background-color: #0056b3;
     }
 
-    .show-btn {
-      background-color: #555;
-      color: white;
-      font-weight: bold;
-      padding: 10px 20px;
-    }
-
-    .download-btn {
-      background-color: green;
-      color: white;
-      font-weight: bold;
-      padding: 10px 20px;
-    }
-
-    .correct {
-      background-color: lightgreen !important;
-    }
-
-    .incorrect {
-      background-color: lightcoral !important;
-    }
-
-    textarea {
-      width: 100%;
-      font-size: 1em;
-      padding: 10px;
+    @media (min-width: 600px) {
+      .button {
+        width: auto;
+        min-width: 300px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Vocabulary App</h1>
-
-  <div class="file-input">
-    <input type="file" id="fileInput" accept=".txt" />
+  <div class="container">
+    <h1>🧠 Choose Your Vocabulary Tool</h1>
+    
+    <a href="VocabApp.html" class="button">📘 Vocabulary App Quiz</a>
+    <a href="VocabFilp.html" class="button">🃏 Flip Card Vocabulary Trainer</a>
   </div>
-
-  <h2 class="text-inputGroup">Or paste vocabulary below</h2>
-  <div class="text-input text-inputGroup">
-    <textarea id="textInput" rows="8" placeholder="word;meaning\nword;meaning..."></textarea><br/>
-    <button onclick="loadFromText()">Load from Text</button>
-  </div>
-
-  <div id="quizContainer" style="display:none;">
-    <div class="question" id="questionText"></div>
-    <div class="choices" id="choices"></div>
-    <div class="controls">
-      <button class="hard-btn" onclick="markHard()">+ Add to Hard</button>
-      <button class="show-btn" onclick="showAnswer()">Show Answer</button>
-    </div>
-    <div class="score" id="scoreText"></div>
-  </div>
-
-  <div class="button-group">
-    <button class="download-btn" onclick="downloadList('incorrect')">Download Incorrect</button>
-    <button class="download-btn" onclick="downloadList('hard')">Download Hard</button>
-  </div>
-
-  <script>
-    let vocab = [];
-    let currentIndex = 0;
-    let score = 0;
-    let currentQuestion = null;
-    let incorrectList = JSON.parse(localStorage.getItem("incorrectList") || "[]");
-    let hardList = JSON.parse(localStorage.getItem("hardList") || "[]");
-
-    document.getElementById("fileInput").addEventListener("change", function (event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const lines = e.target.result.split("\n").filter(Boolean);
-        vocab = lines
-          .map(line => {
-            const parts = line.split(";");
-            return parts.length === 2 ? { word: parts[0].trim(), meaning: parts[1].trim() } : null;
-          })
-          .filter(Boolean);
-
-        startQuiz();
-      };
-      reader.readAsText(file);
-    });
-
-    function loadFromText() {
-      const text = document.getElementById("textInput").value.trim();
-      if (!text) {
-        alert("Please paste some vocabulary into the textarea.");
-        return;
-      }
-
-      const lines = text.split("\n").filter(Boolean);
-      vocab = lines
-        .map(line => {
-          const parts = line.split(";");
-          return parts.length === 2 ? { word: parts[0].trim(), meaning: parts[1].trim() } : null;
-        })
-        .filter(Boolean);
-
-      if (vocab.length === 0) {
-        alert("No valid vocab entries found.");
-        return;
-      }
-
-      startQuiz();
-    }
-
-    function startQuiz() {
-	  
-	  const elements = document.getElementsByClassName('text-inputGroup');
-		for (let el of elements) {
-			el.style.display = 'none';
-		}
-		
-      currentIndex = 0;
-      score = 0;
-      shuffleArray(vocab);
-      document.getElementById("quizContainer").style.display = "block";
-      showQuestion();
-    }
-
-    function showQuestion() {
-      if (currentIndex >= vocab.length) {
-        document.getElementById("questionText").innerText = `Quiz Complete! You scored ${score}/${vocab.length}`;
-        document.getElementById("choices").innerHTML = "";
-        document.querySelector(".controls").style.display = "none";
-        return;
-      }
-
-      currentQuestion = vocab[currentIndex];
-      document.getElementById("questionText").innerText =
-        `(${currentIndex + 1}/${vocab.length}) What is '${currentQuestion.word}'?`;
-
-      const choicesContainer = document.getElementById("choices");
-      choicesContainer.innerHTML = "";
-
-      const otherMeanings = vocab
-        .filter((v, i) => i !== currentIndex)
-        .map(v => v.meaning);
-
-      let choices = shuffleArray([
-        ...shuffleArray(otherMeanings).slice(0, 3),
-        currentQuestion.meaning,
-      ]);
-
-      choices.forEach(choice => {
-        const btn = document.createElement("button");
-        btn.textContent = choice;
-        btn.onclick = () => checkAnswer(choice, btn);
-        choicesContainer.appendChild(btn);
-      });
-
-      document.getElementById("scoreText").innerText = `Score: ${score}/${vocab.length}`;
-    }
-
-    function checkAnswer(selected, buttonEl) {
-      const allButtons = document.querySelectorAll("#choices button");
-      allButtons.forEach(btn => btn.disabled = true);
-
-      if (selected === currentQuestion.meaning) {
-        buttonEl.classList.add("correct");
-        score++;
-      } else {
-        buttonEl.classList.add("incorrect");
-        const correctBtn = Array.from(allButtons).find(btn => btn.textContent === currentQuestion.meaning);
-        if (correctBtn) correctBtn.classList.add("correct");
-
-        if (!incorrectList.some(item => item.word === currentQuestion.word)) {
-          incorrectList.push(currentQuestion);
-          localStorage.setItem("incorrectList", JSON.stringify(incorrectList));
-        }
-      }
-
-      document.getElementById("scoreText").innerText = `Score: ${score}/${vocab.length}`;
-
-      setTimeout(() => {
-        currentIndex++;
-        showQuestion();
-      }, 1000);
-    }
-
-    function markHard() {
-      if (!hardList.some(item => item.word === currentQuestion.word)) {
-        hardList.push(currentQuestion);
-        localStorage.setItem("hardList", JSON.stringify(hardList));
-        alert(`${currentQuestion.word} → ${currentQuestion.meaning} added to hard list`);
-      }
-    }
-
-    function showAnswer() {
-      const allButtons = document.querySelectorAll("#choices button");
-      allButtons.forEach(btn => {
-        btn.disabled = true;
-        if (btn.textContent === currentQuestion.meaning) {
-          btn.classList.add("correct");
-        }
-      });
-
-      setTimeout(() => {
-        currentIndex++;
-        showQuestion();
-      }, 1000);
-    }
-
-    function downloadList(type) {
-      let list = [];
-      if (type === "incorrect") list = incorrectList;
-      if (type === "hard") list = hardList;
-
-      if (list.length === 0) {
-        alert(`No ${type} words to download.`);
-        return;
-      }
-
-      const content = list.map(item => `${item.word};${item.meaning}`).join("\n");
-      const blob = new Blob([content], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `${type}Vocab.txt`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    }
-
-    function shuffleArray(array) {
-      return array.sort(() => Math.random() - 0.5);
-    }
-  </script>
 </body>
 </html>
