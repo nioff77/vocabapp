@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Flip Card Vocabulary App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    textarea {
+      width: 100%;
+      max-width: 700px;
+      padding: 10px;
+      font-size: 1em;
+      margin-bottom: 20px;
+    }
+
+    .card-container {
+      perspective: 1000px;
+      margin: 20px auto;
+    }
+
+    .card {
+      width: 800px;
+      height: 200px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      cursor: pointer;
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-side {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      <!-- display: flex; -->
+      justify-content: center;
+      align-items: center;
+      backface-visibility: hidden;
+      background-color: white;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .card-front {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+      font-size: 1.1em;
+      color: #222;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .show-btn { background-color: #444; color: white; }
+    .next-btn { background-color: steelblue; color: white; }
+    .hard-btn { background-color: orange; color: white; }
+    .download-btn { background-color: green; color: white; margin-top: 20px; }
+
+    .file-input, .text-input {
+      text-align: center;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    #progress {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+	
+	textarea {
+	  width: 100%;
+	  max-width: 700px;
+	  min-width: 700px;
+	  padding: 12px 15px;
+	  font-size: 1em;
+	  font-family: 'Segoe UI', sans-serif;
+	  border: 2px solid #ccc;
+	  border-radius: 8px;
+	  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+	  transition: all 0.3s ease;
+	  resize: vertical;
+	  background-color: #fff;
+	}
+
+	textarea:focus {
+	  outline: none;
+	  border-color: #007BFF;
+	  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+	  background-color: #fefefe;
+}
+  </style>
+</head>
+<body>
+  <h1>📘 Flip Card Vocabulary Trainer</h1>
+
+  <div class="inputContainer">
+		  <div class="file-input">
+			<input type="file" id="fileInput" accept=".txt" />
+		  </div>
+
+		  <div class="text-input">
+			<textarea id="textInput" rows="6" placeholder="word;meaning;example sentence"></textarea><br/>
+			<button onclick="loadFromText()">Load Vocab From Text</button>
+		  </div>
+  </div>
+
+  <div class="card-container" id="cardContainer" style="display:none;">
+    <div class="card" id="flashcard">
+      <div class="card-side card-front" id="cardFront">Word</div>
+      <div class="card-side card-back" id="cardBack">
+        <div><strong>Meaning:</strong> <span id="meaningText"></span></div>
+        <div style="margin-top: 10px;"><strong>Example:</strong> <em id="exampleText"></em></div>
+      </div>
+    </div>
+    <div id="progress"></div>
+  </div>
+
+  <div class="controls" style="display:none;" id="cardControls">
+    <button class="show-btn" onclick="flipCard()">Show Answer</button>
+    <button class="next-btn" onclick="nextCard()">Next</button>
+    <button class="hard-btn" onclick="markHard()">+ Hard</button>
+  </div>
+
+  <div>
+    <button class="download-btn" onclick="downloadList('hard')">Download Hard List</button>
+    <button class="download-btn" onclick="downloadList('incorrect')">Download Incorrect List</button>
+  </div>
+
+  <script>
+    let vocab = [];
+    let currentIndex = 0;
+    let currentCard = null;
+    let hardList = JSON.parse(localStorage.getItem("hardList") || "[]");
+    let incorrectList = JSON.parse(localStorage.getItem("incorrectList") || "[]");
+
+    const card = document.getElementById("flashcard");
+    const front = document.getElementById("cardFront");
+    const backMeaning = document.getElementById("meaningText");
+    const backExample = document.getElementById("exampleText");
+
+    document.getElementById("fileInput").addEventListener("change", function (event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        loadVocabFromText(e.target.result);
+      };
+      reader.readAsText(file);
+    });
+
+    function loadFromText() {
+      const text = document.getElementById("textInput").value.trim();
+      if (!text) {
+        alert("Please paste some vocabulary into the textarea.");
+        return;
+      }
+      loadVocabFromText(text);
+    }
+
+    function loadVocabFromText(text) {
+      const lines = text.split("\n").filter(Boolean);
+      vocab = lines
+        .map(line => {
+          const parts = line.split(";");
+          return parts.length >= 2
+            ? { word: parts[0].trim(), meaning: parts[1].trim(), example: parts[2] }
+            : null;
+        })
+        .filter(Boolean);
+
+      if (vocab.length === 0) {
+        alert("No valid vocab entries found.");
+        return;
+      }
+
+	  hideElementsByClass('inputContainer');
+      document.getElementById("cardContainer").style.display = "block";
+      document.getElementById("cardControls").style.display = "flex";
+      currentIndex = 0;
+      shuffleArray(vocab);
+      showCard();
+    }
+
+    function showCard() {
+      currentCard = vocab[currentIndex];
+      card.classList.remove("flipped");
+      front.innerText = currentCard.word;
+      backMeaning.innerText = currentCard.meaning;
+      backExample.innerText = currentCard.example || "—";
+      document.getElementById("progress").innerText = `(${currentIndex + 1}/${vocab.length})`;
+    }
+
+    function flipCard() {
+      card.classList.toggle("flipped");
+    }
+
+    function nextCard() {
+      if (!card.classList.contains("flipped")) {
+        if (!incorrectList.some(item => item.word === currentCard.word)) {
+          incorrectList.push(currentCard);
+          localStorage.setItem("incorrectList", JSON.stringify(incorrectList));
+        }
+      }
+      currentIndex++;
+      if (currentIndex >= vocab.length) {
+        alert("🎉 You've finished all flashcards!");
+        return;
+      }
+      showCard();
+    }
+
+    function markHard() {
+      if (!hardList.some(item => item.word === currentCard.word)) {
+        hardList.push(currentCard);
+        localStorage.setItem("hardList", JSON.stringify(hardList));
+        alert(`${currentCard.word} added to Hard List.`);
+      }
+    }
+
+    function downloadList(type) {
+      let list = type === "hard" ? hardList : incorrectList;
+      if (list.length === 0) {
+        alert(`No ${type} items to download.`);
+        return;
+      }
+      const content = list.map(item => `${item.word};${item.meaning};${item.example || ""}`).join("\n");
+      const blob = new Blob([content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${type}Vocab.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function shuffleArray(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+	
+	function hideElementsByClass(className) {
+	  const elements = document.getElementsByClassName(className);
+	  for (let el of elements) {
+		el.style.display = 'none';
+	  }
+	}
+  </script>
+</body>
+</html>
