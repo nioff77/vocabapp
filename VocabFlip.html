@@ -33,7 +33,7 @@
     }
 
     .card {
-      width: 800px;
+      width: 20rem;
       height: 200px;
       position: relative;
       transform-style: preserve-3d;
@@ -107,8 +107,7 @@
 	
 	textarea {
 	  width: 100%;
-	  max-width: 700px;
-	  min-width: 700px;
+	  min-width: 80%;
 	  padding: 12px 15px;
 	  font-size: 1em;
 	  font-family: 'Segoe UI', sans-serif;
@@ -126,6 +125,10 @@
 	  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
 	  background-color: #fefefe;
 }
+
+  .controlsContainer{
+    text-align: center;
+  }
   </style>
 </head>
 <body>
@@ -153,15 +156,16 @@
     <div id="progress"></div>
   </div>
 
-  <div class="controls" style="display:none;" id="cardControls">
-    <button class="show-btn" onclick="flipCard()">Show Answer</button>
-    <button class="next-btn" onclick="nextCard()">Next</button>
-    <button class="hard-btn" onclick="markHard()">+ Hard</button>
-  </div>
-
-  <div>
-    <button class="download-btn" onclick="downloadList('hard')">Download Hard List</button>
-    <button class="download-btn" onclick="downloadList('incorrect')">Download Incorrect List</button>
+  <div class="controlsContainer">
+    <div class="controls" style="display:none;" id="cardControls">
+        <button class="show-btn" onclick="flipCard()">Show Answer</button>
+        <button class="next-btn" onclick="nextCard()">Next</button>
+        <button class="hard-btn" onclick="markHard()">+ Hard</button>
+    </div>
+    <div>
+      <button class="download-btn" onclick="downloadList('hard')">Download Hard List</button>
+      <button class="download-btn" onclick="downloadList('incorrect')">Download Incorrect List</button>
+    </div>
   </div>
 
   <script>
