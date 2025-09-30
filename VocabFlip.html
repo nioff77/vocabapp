@@ -91,7 +91,7 @@
     .show-btn { background-color: #444; color: white; }
     .next-btn { background-color: steelblue; color: white; }
     .hard-btn { background-color: orange; color: white; }
-    .download-btn { background-color: green; color: white; margin-top: 20px; }
+    .download-btn { background-color: green; color: white; }
 
     .file-input, .text-input {
       text-align: center;
@@ -153,6 +153,100 @@
       }
   }
 
+   .controlsContainer {
+    display: flex;
+    flex-direction: column; /* Stack the two groups vertically */
+    gap: 20px;
+    align-items: center;
+    padding: 20px 0;
+}
+
+	/* Ensure buttons are nicely spaced within their groups */
+	.card-actions, .utility-actions {
+		display: flex;
+		gap: 15px; /* Spacing between buttons in a row */
+		justify-content: center;
+		width: 100%;
+	}
+
+	.btn {
+		padding: 12px 20px; /* Generous padding for a modern look */
+		border: none;
+		border-radius: 8px; /* Slightly rounded corners */
+		cursor: pointer;
+		font-size: 16px;
+		font-weight: 600;
+		transition: all 0.2s ease; /* Smooth transitions for hover effects */
+	}
+
+	/* Hover and Active effects add richness */
+	.btn:hover {
+		filter: brightness(1.1); /* Subtle light effect on hover */
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle lift effect */
+	}
+	
+	/* Show Answer (Subtle/Secondary) */
+	.show-btn {
+		background-color: #f0f0f0; /* Light gray */
+		color: #333;
+		border: 1px solid #ddd;
+	}
+
+	/* Next (Primary/CTA) */
+	.next-btn {
+		background-color: #007bff; /* Bright Blue (Primary Color) */
+		color: white;
+		/* Adding a light shadow to make it 'pop' */
+		box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+	}
+
+	/* + Hard (Accent/Warning) */
+	.hard-btn {
+		background-color: #ffc107; /* Warm Yellow/Orange */
+		color: #333;
+	}
+	
+	/* Show Answer (Subtle/Secondary) */
+	.show-btn {
+		background-color: #f0f0f0; /* Light gray */
+		color: #333;
+		border: 1px solid #ddd;
+	}
+
+	/* Next (Primary/CTA) */
+	.next-btn {
+		background-color: #007bff; /* Bright Blue (Primary Color) */
+		color: white;
+		/* Adding a light shadow to make it 'pop' */
+		box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+	}
+
+	/* + Hard (Accent/Warning) */
+	.hard-btn {
+		background-color: #ffc107; /* Warm Yellow/Orange */
+		color: #333;
+	}
+	
+	.utility-actions {
+		/* Use less padding for the utility row to make it appear less dominant */
+		padding-top: 10px; 
+		border-top: 1px solid #eee; /* A subtle separator line */
+	}
+
+	.download-btn {
+		background-color: transparent; /* Ghost button style */
+		color: #007bff; /* Match the primary color */
+		border: 1px solid #007bff;
+		font-size: 14px;
+		border-radius: 4px; /* Slightly less rounded */
+	}
+
+	.download-btn:hover {
+		background-color: #007bff;
+		color: white;
+	}
+	
+	
   </style>
 </head>
 <body>
@@ -175,24 +269,27 @@
       <div class="card-side card-back" id="cardBack">
         <div><strong>Meaning:</strong> <span id="meaningText"></span></div>
         <div style="margin-top: 20px;"><strong>Example:</strong> <em id="exampleText"></em></div>
-        <div style="margin-top: 10px;" class="faded"><strong>Translation:</strong><em id="2ndexampleText"></em></div>
+        <div style="margin-top: 10px;" class="faded"><strong>Tranlation:</strong><em id="2ndexampleText"></em></div>
       </div>
     </div>
     <div id="progress"></div>
   </div>
 
-  <div class="controlsContainer">
-    <div class="controls" style="display:none;" id="cardControls">
-        <button class="show-btn" onclick="flipCard()">Show Answer</button>
-        <button class="next-btn" onclick="nextCard()">Next</button>
-        <button class="hard-btn" onclick="markHard()">+ Hard</button>
-    </div>
-    <div>
-      <button class="download-btn" onclick="downloadList('hard')">Download Hard List</button>
-      <button class="download-btn" onclick="downloadList('incorrect')">Download Incorrect List</button>
-    </div>
-  </div>
+	<div class="controlsContainer" style="display:none;" id="controlsContainer">
+		<div class="card-actions" id="cardControls" style="display:block;">
+			<button class="btn show-btn" onclick="flipCard()">Show Answer</button>
+			<button class="btn next-btn" onclick="nextCard()">Next</button>
+			<button class="btn hard-btn" onclick="markHard()">+ Hard</button>
+			<button class="btn download-btn" onclick="downloadList('hard')">Download Hard List</button>
+		</div>
+		
+		<div class="utility-actions" style="display:none">
 
+			<button class="btn download-btn secondary" onclick="downloadList('incorrect')">
+				<i class="icon-download"></i> Download Incorrect List
+			</button>
+		</div>
+	</div>
   <script>
     let vocab = [];
     let currentIndex = 0;
@@ -244,6 +341,7 @@
 
 	  hideElementsByClass('inputContainer');
       document.getElementById("cardContainer").style.display = "block";
+	  document.getElementById("controlsContainer").style.display = "block";
       document.getElementById("cardControls").style.display = "flex";
       currentIndex = 0;
       shuffleArray(vocab);
