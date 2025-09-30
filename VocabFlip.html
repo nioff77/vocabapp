@@ -33,7 +33,7 @@
     }
 
     .card {
-      width: 20rem;
+      width: 40rem;
       height: 200px;
       position: relative;
       transform-style: preserve-3d;
@@ -51,7 +51,6 @@
       height: 100%;
       border-radius: 10px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      <!-- display: flex; -->
       justify-content: center;
       align-items: center;
       backface-visibility: hidden;
@@ -129,6 +128,18 @@
   .controlsContainer{
     text-align: center;
   }
+
+  @media screen and (max-width: 600px)  {
+        .card {
+          width: 20rem;
+          height: 200px;
+          position: relative;
+          transform-style: preserve-3d;
+          transition: transform 0.6s;
+          cursor: pointer;
+        }
+  }
+
   </style>
 </head>
 <body>
@@ -151,6 +162,7 @@
       <div class="card-side card-back" id="cardBack">
         <div><strong>Meaning:</strong> <span id="meaningText"></span></div>
         <div style="margin-top: 10px;"><strong>Example:</strong> <em id="exampleText"></em></div>
+        <div style="margin-top: 10px;"><em id="2ndexampleText"></em></div>
       </div>
     </div>
     <div id="progress"></div>
@@ -179,6 +191,7 @@
     const front = document.getElementById("cardFront");
     const backMeaning = document.getElementById("meaningText");
     const backExample = document.getElementById("exampleText");
+    const backExample2 = document.getElementById("2ndexampleText");
 
     document.getElementById("fileInput").addEventListener("change", function (event) {
       const file = event.target.files[0];
@@ -206,7 +219,7 @@
         .map(line => {
           const parts = line.split(";");
           return parts.length >= 2
-            ? { word: parts[0].trim(), meaning: parts[1].trim(), example: parts[2] }
+            ? { word: parts[0].trim(), meaning: parts[1].trim(), example: parts[2], example2: parts[3] }
             : null;
         })
         .filter(Boolean);
@@ -230,6 +243,7 @@
       front.innerText = currentCard.word;
       backMeaning.innerText = currentCard.meaning;
       backExample.innerText = currentCard.example || "—";
+      backExample2.innerText = currentCard.example2 || "—";
       document.getElementById("progress").innerText = `(${currentIndex + 1}/${vocab.length})`;
     }
 
@@ -266,7 +280,7 @@
         alert(`No ${type} items to download.`);
         return;
       }
-      const content = list.map(item => `${item.word};${item.meaning};${item.example || ""}`).join("\n");
+      const content = list.map(item => `${item.word};${item.meaning};${item.example || ""};${item.example2 || ""}`).join("\n");
       const blob = new Blob([content], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
