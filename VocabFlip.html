@@ -129,6 +129,12 @@
     text-align: center;
   }
 
+  .faded {
+    color: #999;
+    opacity: 1.6;
+    font-weight: normal;
+  }
+
   @media screen and (max-width: 600px)  {
         .card {
           width: 20rem;
@@ -161,8 +167,8 @@
       <div class="card-side card-front" id="cardFront">Word</div>
       <div class="card-side card-back" id="cardBack">
         <div><strong>Meaning:</strong> <span id="meaningText"></span></div>
-        <div style="margin-top: 10px;"><strong>Example:</strong> <em id="exampleText"></em></div>
-        <div style="margin-top: 10px;"><em id="2ndexampleText"></em></div>
+        <div style="margin-top: 20px;"><strong>Example:</strong> <em id="exampleText"></em></div>
+        <div style="margin-top: 10px;" class="faded"><strong>Tranlation:</strong><em id="2ndexampleText"></em></div>
       </div>
     </div>
     <div id="progress"></div>
